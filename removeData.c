@@ -112,43 +112,55 @@ Node *readDatafromFile (Node *target_node) {
 }
 
 // no child => 0, has left => 1, has right => 2, had both => 3, no name => -1
-int hasChildInData(Node *target_node, char name[], Node *left, Node *right) { 
-    Node *node = target_node; // duplicate
+int hasChildInData(Node *target_node, char name[], Node *childNode, Node *parentNode) { 
+    childNode = target_node; // duplicate
      
-    while (node) { // break when node = NULL
-        int cmp = strcmp(name, node->name);
-        if (cmp < 0) node = node->left; // if lower than target, set to left 
-        else if (cmp > 0) node = node->right; // if higher than target, set to right 
-        else if (cmp == 0) { // if equal, copy
-            left = node->left;
-            right = node->right;
+    while (childNode) {// search n assign parentNode pointer
+        int cmp = strcmp(name, childNode->name);
 
-            if (!left && !right) return 0;
-            else if (left && !right) return 1;
-            else if (!left && right) return 2;
-            else if (left && right) return 3;
-        } 
+        if (cmp < 0) {
+            parentNode = childNode;
+            childNode = childNode->left;
+        } else if (cmp > 0) {
+            parentNode = childNode;
+            childNode = childNode->right;
+        } else if (cmp == 0) {
+            if (!(childNode->left) && !(childNode->right)) return 0;
+            if (childNode->left && !(childNode->right)) return 1;
+            if (!(childNode->left) && childNode->right) return 2;
+            if (childNode->left && childNode->right) return 3;
+        }
     }
-    return -1// if NULL return -1
+    return -1 // if NULL return -1
 }
 
 void removeData (Node *target_node, String name) {
-    Node *left = NULL;
-    Node *right = NULL;
-    // if no child
-    switch (hasChildInData(target_node, name, left, right)) {
-        case -1:
-            printf("No name in data\n");
-            return;
-        case 0:
-            break;
-        case 1:
-            break;
-        case 2:
-            break;
-        case 3:
-            break;
+    Node *parentNode = NULL;
+    Node *childNode = target_node;
+
+    int hasChild = hasChildInData(target_node, name, childNode, parentNode);
+    if (hasChild == 0) { // no child
+        if (childNode == parentNode.left) { // if childNode is left of parentNode
+            parentNode.left == NULL;
+            
+        } else if(childNode == parentNode.right) {
+            parentNode.right == NULL;   
+        }
+        free(childNode);
+    } else if (hasChild == 1) { // has left
+        strcpy(childNode->name, childNode->left->name);
+        strcpy(childNode->phoneNumber, childNode->left->phoneNumber);
+        free(childNode->left);
+    } else if (hasChild == 2) { // has right
+        strcpy(childNode->name, childNode->right->name);
+        strcpy(childNode->phoneNumber, childNode->right->phoneNumber);
+        free(childNode->right);
+    } else if (hasChild == 3) {
+        
     }
+
+    
+
 
 }
 
@@ -156,5 +168,5 @@ int main(){
     Node *node = NULL; // root
 
     node = readDatafromFile(node);
-    showAllData(node);
+    
 }
