@@ -89,8 +89,7 @@ void showAllData(Node *n){ // recursive
 Node *readDatafromFile (Node *target_node) {
     String fName; // input File name from console
     printf("Please type file name.\n");
-    scanf("%s", &fName);
-
+    scanf("%s", fName);
     FILE *fp;
     fp = fopen(fName, "r"); // open file
     if (!fp) {// if NULL exit
@@ -100,11 +99,10 @@ Node *readDatafromFile (Node *target_node) {
 
     String str;
     while (fgets(str, N, fp) != NULL) { // each line
-        Node *new;
-        strcpy(new->name, strtok(str, " ")); // split name n phoneNumber
-        strcpy(new->phoneNumber, strtok(NULL, " "));
-
-        target_node = addData(target_node, new);
+        Node new;
+        strcpy(new.name, strtok(str, " ")); // split name n phoneNumber
+        strcpy(new.phoneNumber, strtok(NULL, " "));
+        target_node = addData(target_node, &new);
     }
 
     fclose(fp);
@@ -113,7 +111,6 @@ Node *readDatafromFile (Node *target_node) {
 
 int main(){
     Node *node = NULL; // root
-
     node = readDatafromFile(node);
     showAllData(node);
 }

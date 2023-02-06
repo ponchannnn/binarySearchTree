@@ -15,11 +15,11 @@ typedef struct node{
 
 Node *mallocNode(String, String);
 Node *addData(Node *target_node, Node *add_node){
-    if (target_node == NULL) {// if no root, create as a root
+    if (!target_node) {// if no root, create as a root
 
         target_node = mallocNode(add_node->name, add_node->phoneNumber);
 
-        if (target_node == NULL) return NULL; // malloc error
+        if (!target_node) return NULL; // malloc error
 
         return target_node;
     }
