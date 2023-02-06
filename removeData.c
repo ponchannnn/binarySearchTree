@@ -86,7 +86,7 @@ void showAllData(Node *n){ // recursive
     if (n->right) showAllData(n->right); // right not NULL
 }
 
-Node *readDatafromFile (Node *target_node) {
+void readDatafromFile (Node *target_node) {
     String fName; // input File name from console
     printf("Please type file name.\n");
     scanf("%s", &fName);
@@ -108,7 +108,7 @@ Node *readDatafromFile (Node *target_node) {
     }
 
     fclose(fp);
-    return target_node;
+    return;
 }
 
 // no child => 0, has left => 1, has right => 2, had both => 3, no name => -1
@@ -134,28 +134,44 @@ int hasChildInData(Node *target_node, char name[], Node *childNode, Node *parent
     return -1 // if NULL return -1
 }
 
+void removeNoChildNode (Node *parentNode, Node *childNode) {
+    if (childNode == parentNode.left) parentNode.left == NULL; // if childNode is left of parentNode -> update to NULL
+    else if (childNode == parentNode.right) parentNode.right == NULL; // if childNode is right of parentNode -> update to NULL
+    free(childNode);
+}
+
+void removeOneSideChildNode (Node *childNode, Node *grandChildNode) {
+    strcpy(childNode->name, grandChildNode->name); // cpy grandChildNode to childNode
+    strcpy(childNode->phoneNumber, grandChildNode->phoneNumber);
+    free(grandChildNode);
+}
+
+void removeBothSideChildNode (Node *root, Node *removeNode) {
+    Node *lastNode = removeNode->left; // left of the childNode
+    Node *lastNodeParent = removeNode;
+
+    while (!lastNode->right) { // find last node of the removeNode => no right node, if last
+        lastNodeParent = lastNode;
+        lastNode = lastNode->right;
+    }
+
+    strcpy(removeNode->name, lastNode->name); // replace name to removeNode
+    strcpy(removeNode->phoneNumber, lastNode->phoneNumber); // replace phone number to removeNode
+
+    lastNodeParent->right = NULL; // break the link
+    if (lastNode->left) removeOneSideChildNode(); // if has left child
+    else removeBothSideChildNode(); // if no child
+}
+
 void removeData (Node *target_node, String name) {
     Node *parentNode = NULL;
     Node *childNode = target_node;
 
     int hasChild = hasChildInData(target_node, name, childNode, parentNode);
-    if (hasChild == 0) { // no child
-        if (childNode == parentNode.left) { // if childNode is left of parentNode
-            parentNode.left == NULL;
-            
-        } else if(childNode == parentNode.right) {
-            parentNode.right == NULL;   
-        }
-        free(childNode);
-    } else if (hasChild == 1) { // has left
-        strcpy(childNode->name, childNode->left->name);
-        strcpy(childNode->phoneNumber, childNode->left->phoneNumber);
-        free(childNode->left);
-    } else if (hasChild == 2) { // has right
-        strcpy(childNode->name, childNode->right->name);
-        strcpy(childNode->phoneNumber, childNode->right->phoneNumber);
-        free(childNode->right);
-    } else if (hasChild == 3) {
+    if (hasChild == 0) removeNoChildNode(childNode, parentNode); // no child
+    else if (hasChild == 1) removeOneSideChildNode(childNode, childNode->left); // has left
+    else if (hasChild == 2) removeOneSideChildNode(childNode, childNode->right); // has right
+    else if (hasChild == 3) {
         
     }
 
