@@ -17,34 +17,30 @@ typedef struct node{
 Node *mallocNode(String, String);
 Node *addData(Node *target_node, Node *add_node){
     if (!target_node) {// if no root, create as a root
-
         target_node = mallocNode(add_node->name, add_node->phoneNumber);
 
         if (!target_node) return NULL; // malloc error
-
         return target_node;
     }
 
-
     Node *node = target_node;
     while(1) {
-        if (strcmp(add_node->name, node->name) < 0) { // The case new name is lease than root
+        int nameCmp = strcmp(add_node->name, node->name);
+        if (nameCmp < 0) { // The case new name is lease than root
             if (!node->left) { // if no left node, malloc
-
                 node->left = mallocNode(add_node->name, add_node->phoneNumber); // add new node at left
                 break;
             }
             node = node->left; // if has left, switch this to center
 
-        } else if (strcmp(add_node->name, node->name) > 0) { // The case new name is bigger than root
+        } else if (nameCmp > 0) { // The case new name is bigger than root
             if (!node->right) {
-
                 node->right = mallocNode(add_node->name, add_node->phoneNumber); // if no right node, malloc
                 break;
             }
             node = node->right; // if has right, switch this to center
 
-        } else { // if the new name is same , skip
+        } else if (nameCmp == 0) { // if the new name is same , skip
             printf("%s already exist\n", add_node->name);
             break;
         }

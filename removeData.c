@@ -18,38 +18,28 @@ typedef struct node{
 Node *mallocNode(String, String);
 Node *addData(Node *target_node, Node *add_node){
     if (!target_node) {// if no root, create as a root
-
-        printf("We don't have no root.\nCreated a root!\n");
         target_node = mallocNode(add_node->name, add_node->phoneNumber);
 
         if (!target_node) return NULL; // malloc error
-
         return target_node;
     }
-
 
     Node *node = target_node;
     while(1) {
         int nameCmp = strcmp(add_node->name, node->name);
         if (nameCmp < 0) { // The case new name is lease than root
-            printf("going to left node\n");
-            if (node->left == NULL) { // if no left node, malloc
-                printf("We don't have no child.\nCreated a child here!\n");
+            if (!node->left) { // if no left node, malloc
                 node->left = mallocNode(add_node->name, add_node->phoneNumber); // add new node at left
                 break;
             }
             node = node->left; // if has left, switch this to center
-            printf("We have a left child n switch to left child.\n");
 
         } else if (nameCmp > 0) { // The case new name is bigger than root
-            printf("going to right node\n");
-            if (node->right == NULL) {
-                printf("We don't have no child.\n Created a child here!\n");
+            if (!node->right) {
                 node->right = mallocNode(add_node->name, add_node->phoneNumber); // if no right node, malloc
                 break;
             }
             node = node->right; // if has right, switch this to center
-            printf("We have a right child n switch to right child.\n");
 
         } else if (nameCmp == 0) { // if the new name is same , skip
             printf("%s already exist\n", add_node->name);
@@ -74,16 +64,7 @@ Node *mallocNode(String name, String phoneNumber) {
     return add;
 }
 
-// n : how many args, target_node : root, name : search name, number : output phone number
-Node *searchData(int n, Node *target_node, char name[], ...) { // updated
-    char *number;
-    if (n == 4) { // if has variable arguments, analize
-        va_list ap; 
-        va_start(ap, name);
-        number = va_arg(ap, char *);
-        va_end(ap);
-    }
-
+void searchData(Node *target_node, char name[], char number[]) {
     Node *node = target_node; // duplicate
      
     while (node) { // break when node = NULL
@@ -91,11 +72,30 @@ Node *searchData(int n, Node *target_node, char name[], ...) { // updated
         if (cmp < 0) node = node->left; // if lower than target, set to left 
         else if (cmp > 0) node = node->right; // if higher than target, set to right 
         else if (cmp == 0) { // if equal, copy
-            if (n == 4) strcpy(number, node->phoneNumber); // output the phone number
+            strcpy(number, node->phoneNumber);
+            return;
+        } 
+    }
+    strcpy(number, "No number");
+}
+
+// n : how many args, target_node : root, name : search name, parent : parent node pointer
+Node *searchParent(Node *target_node, char name[], Node **parent) {
+
+    Node *node = target_node; // duplicate
+     
+    while (node) { // break when node = NULL
+        int cmp = strcmp(name, node->name);
+        if (cmp < 0) { // if lower than target, set to left 
+        *parent = node;
+        node = node->left;
+        } else if (cmp > 0) { // if higher than target, set to right 
+            *parent = node;
+            node = node->right;
+        } else if (cmp == 0) { // if equal, copy
             return node;
         }
     }
-    if (n == 4) strcpy(number, "No number");
     return NULL;
 }
 
@@ -105,10 +105,10 @@ void showAllData(Node *n){ // recursive
     if (n->right) showAllData(n->right); // right not NULL
 }
 
-void readDatafromFile (Node *target_node) {
+Node *readDatafromFile (Node *target_node) {
     String fName; // input File name from console
     printf("Please type file name.\n");
-    scanf("%s", &fName);
+    scanf("%s", fName);
 
     FILE *fp;
     fp = fopen(fName, "r"); // open file
@@ -127,7 +127,7 @@ void readDatafromFile (Node *target_node) {
     }
 
     fclose(fp);
-    return;
+    return target_node;
 }
 
 // no child => 0, has left => 1, has right => 2, had both => 3, no name => -1
@@ -150,13 +150,13 @@ int hasChildInData(Node *target_node, char name[], Node *childNode, Node *parent
             if (childNode->left && childNode->right) return 3;
         }
     }
-    return -1 // if NULL return -1
+    return -1; // if NULL return -1
 }
 
 // parentNode : 
 void removeNoChildNode (Node *parentNode, Node *childNode) {
-    if (childNode == parentNode.left) parentNode.left == NULL; // if childNode is left of parentNode -> update to NULL
-    else if (childNode == parentNode.right) parentNode.right == NULL; // if childNode is right of parentNode -> update to NULL
+    if (childNode == parentNode->left) parentNode->left = NULL; // if childNode is left of parentNode -> update to NULL
+    else if (childNode == parentNode->right) parentNode->right = NULL; // if childNode is right of parentNode -> update to NULL
     free(childNode);
 }
 
@@ -164,6 +164,8 @@ void removeNoChildNode (Node *parentNode, Node *childNode) {
 void removeOneSideChildNode (Node *childNode, Node *grandChildNode) {
     strcpy(childNode->name, grandChildNode->name); // cpy grandChildNode to childNode
     strcpy(childNode->phoneNumber, grandChildNode->phoneNumber);
+    childNode->left = grandChildNode->left;
+    childNode->right = grandChildNode->right;
     free(grandChildNode);
 }
 
@@ -180,23 +182,21 @@ void removeBothSideChildNode (Node *root, Node *removeNode) {
     strcpy(removeNode->phoneNumber, lastNode->phoneNumber); // replace phone number to removeNode
 
     lastNodeParent->right = NULL; // break the link
-    if (lastNode->left) removeOneSideChildNode(); // if has left child
-    else removeBothSideChildNode(); // if no child
+    if (lastNode->left) removeOneSideChildNode(lastNode, lastNode->left); // if has left child, remove lastNode
+    else removeNoChildNode(lastNodeParent, lastNode); // if no child, remove lastNode
 }
 
 void removeData (Node *target_node, String name) {
     Node *parentNode = NULL;
-    Node *childNode = searchData(target_node, name);
+    Node *childNode = searchParent(target_node, name, &parentNode);
 
     int hasChild = hasChildInData(target_node, name, childNode, parentNode);
-    if (hasChild == 0) removeNoChildNode(childNode, parentNode); // no child
+    if (hasChild == 0) removeNoChildNode(parentNode, childNode); // no child
     else if (hasChild == 1) removeOneSideChildNode(childNode, childNode->left); // has left
     else if (hasChild == 2) removeOneSideChildNode(childNode, childNode->right); // has right
     else if (hasChild == 3) removeBothSideChildNode(target_node, childNode); // has left n right
 
-    
-
-
+    printf("Completely removed %s\n", name);
 }
 
 int main(){
@@ -204,9 +204,13 @@ int main(){
 
     node = readDatafromFile(node);
     
+    showAllData(node);
+
     String removeName;
     printf("Please type the name whom you want to remove from the binary tree.\n");
     scanf("%s", removeName);
 
     removeData(node, removeName);
+
+    showAllData(node);
 }
