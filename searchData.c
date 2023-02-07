@@ -15,35 +15,31 @@ typedef struct node{
 
 Node *mallocNode(String, String);
 Node *addData(Node *target_node, Node *add_node){
-    if (target_node == NULL) {// if no root, create as a root
-
+    if (!target_node) {// if no root, create as a root
         target_node = mallocNode(add_node->name, add_node->phoneNumber);
 
-        if (target_node == NULL) return NULL; // malloc error
-
+        if (!target_node) return NULL; // malloc error
         return target_node;
     }
 
-
     Node *node = target_node;
     while(1) {
-        if (strcmp(add_node->name, node->name) < 0) { // The case new name is lease than root
-            if (node->left == NULL) { // if no left node, malloc
-
+        int nameCmp = strcmp(add_node->name, node->name);
+        if (nameCmp < 0) { // The case new name is lease than root
+            if (!node->left) { // if no left node, malloc
                 node->left = mallocNode(add_node->name, add_node->phoneNumber); // add new node at left
                 break;
             }
             node = node->left; // if has left, switch this to center
 
-        } else if (strcmp(add_node->name, node->name) > 0) { // The case new name is bigger than root
-            if (node->right == NULL) {
-
+        } else if (nameCmp > 0) { // The case new name is bigger than root
+            if (!node->right) {
                 node->right = mallocNode(add_node->name, add_node->phoneNumber); // if no right node, malloc
                 break;
             }
             node = node->right; // if has right, switch this to center
 
-        } else { // if the new name is same , skip
+        } else if (nameCmp == 0) { // if the new name is same , skip
             printf("%s already exist\n", add_node->name);
             break;
         }
@@ -53,7 +49,7 @@ Node *addData(Node *target_node, Node *add_node){
 
 Node *mallocNode(String name, String phoneNumber) {
     Node *add = malloc(sizeof(Node));// malloc
-    if (add == NULL) {// check malloc error
+    if (!add) {// check malloc error
         printf("Malloc Error\n");
         return NULL;
     }
@@ -90,11 +86,11 @@ int main() {
         if (a == 0) {
             String name;
             printf("type name\n");
-            scanf("%s", &name);
+            scanf("%s", name);
 
             String pn;
             printf("type phone number\n");
-            scanf("%s", &pn);
+            scanf("%s", pn);
 
             Node new;
             strcpy(new.name, name);
